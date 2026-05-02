@@ -1,0 +1,21 @@
+#DATABASE
+ketika menjalankan migrate db= sbt "runMain Main migrate"
+ketika menjalankan fresh db = sbt "runMain Main fresh"
+ketika menjalankan seed db = sbt "runMain Main seed"
+
+#BUILD.SBT
+jangan lupa daftarkan ini di build.sbt (PENTING & DASAR)
+libraryDependencies ++= Seq(
+  jdbc,
+  "mysql" % "mysql-connector-java" % "8.0.33"
+)
+Compile / unmanagedSourceDirectories += baseDirectory.value / "cli"
+
+#APPLICATION.CONF
+db.default.driver=com.mysql.cj.jdbc.Driver
+db.default.url="jdbc:mysql://localhost:3308/be_scala_crud"
+db.default.username="root"
+db.default.password="root123"
+
+#CARA RUNNING CUSTOM PORT
+sbt -Dhttp.port=9098 run
