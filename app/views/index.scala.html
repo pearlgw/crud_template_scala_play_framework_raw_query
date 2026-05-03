@@ -1,5 +1,165 @@
 @()
 
-@main("CRUD Gayuh") {
-  <h1>Hallo Crud Buku tes</h1>
+@main("Users List") {
+
+    <div x-data="userTable()" x-init="fetchUsers()" class="p-6 max-w-5xl mx-auto">
+
+        <h1 class="text-2xl font-bold mb-6">Users</h1>
+
+            <!-- SEARCH -->
+        <div class="mb-4 flex justify-between items-center">
+            <input type="text"
+            x-model="search"
+            x-on:input.debounce.500ms="fetchUsers()"
+            placeholder="Search nama..."
+            class="border rounded-lg px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+
+            <!-- TABLE -->
+        <div class="overflow-x-auto bg-white shadow rounded-xl">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+                    <tr>
+                        <th class="px-6 py-3">Nama</th>
+                        <th class="px-6 py-3">No Telepon</th>
+                        <th class="px-6 py-3">Alamat</th>
+                        <th class="px-6 py-3">Created</th>
+                        <th class="px-6 py-3 text-center">Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y">
+
+                        <!-- LOADING -->
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="5" class="text-center py-6 text-gray-500">
+                                Loading...
+                            </td>
+                        </tr>
+                    </template>
+
+                        <!-- DATA -->
+                    <template x-for="user in users" :key="user.id">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-3 font-medium" x-text="user.nama"></td>
+                            <td class="px-6 py-3" x-text="user.no_telepon"></td>
+                            <td class="px-6 py-3" x-text="user.alamat"></td>
+                            <td class="px-6 py-3 text-gray-500" x-text="user.created_at"></td>
+
+                            <td class="px-6 py-3 text-center space-x-2">
+
+                                    <!-- SHOW -->
+                                <a :href="`/users/${user.id}`"
+                                class="text-blue-600 hover:underline">
+                                    Show
+                                </a>
+
+                                    <!-- DELETE -->
+                                <button
+                                x-on:click="deleteUser(user.id)"
+                                class="text-red-600 hover:underline">
+                                    Delete
+                                </button>
+
+                            </td>
+                        </tr>
+                    </template>
+
+                        <!-- EMPTY -->
+                    <template x-if="!loading && users.length === 0">
+                        <tr>
+                            <td colspan="5" class="text-center py-6 text-gray-500">
+                                Data tidak ditemukan
+                            </td>
+                        </tr>
+                    </template>
+
+                </tbody>
+            </table>
+        </div>
+
+            <!-- PAGINATION -->
+        <div class="flex justify-between items-center mt-6">
+
+            <button
+            x-on:click="prevPage()"
+            :disabled="page === 1"
+            class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
+                Prev
+            </button>
+
+            <div class="text-sm text-gray-600">
+                Page <span class="font-semibold" x-text="page"></span>
+            </div>
+
+            <button
+            x-on:click="nextPage()"
+            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                Next
+            </button>
+
+        </div>
+
+    </div>
+
+    <script>
+            function userTable() {
+                return {
+                    users: [],
+                    page: 1,
+                    limit: 2,
+                    total: 0,
+                    search: '',
+                    loading: false,
+
+                    async fetchUsers() {
+                        this.loading = true
+
+                        let url = `/api/users?page=${this.page}&limit=${this.limit}`
+
+                        if (this.search) {
+                            url += `&search=${this.search}`
+                        }
+
+                        try {
+                            const res = await fetch(url)
+                            const json = await res.json()
+
+                            // ⚠️ sesuaikan dengan response kamu
+                            this.users = json.data
+                            this.total = json.meta?.total
+
+                        } catch (e) {
+                            console.error(e)
+                        } finally {
+                            this.loading = false
+                        }
+                    },
+
+                    nextPage() {
+                        this.page++
+                        this.fetchUsers()
+                    },
+
+                    prevPage() {
+                        if (this.page > 1) {
+                            this.page--
+                            this.fetchUsers()
+                        }
+                    },
+
+                    async deleteUser(id) {
+                        if (!confirm("Yakin hapus?")) return
+
+                        await fetch(`/api/users/${id}`, {
+                            method: 'DELETE'
+                        })
+
+                        this.fetchUsers()
+                    }
+                }
+            }
+    </script>
+
 }

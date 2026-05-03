@@ -4,7 +4,8 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET           /                     controllers.HomeController.index()
+GET           /                     controllers.api.UserController.viewIndex()
+GET           /users/:id            controllers.api.UserController.viewShow(id: String)
 
 GET           /api/users            controllers.api.UserController.index()
 POST          /api/users            controllers.api.UserController.store()

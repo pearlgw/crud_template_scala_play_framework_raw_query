@@ -1,0 +1,30 @@
+@(id: String)
+
+@main("Detail User") {
+
+    <div x-data="userDetail()" x-init="fetchUser()">
+
+        <h1>Detail User</h1>
+
+        <p><b>Nama:</b> <span x-text="user.nama"></span></p>
+        <p><b>No Telepon:</b> <span x-text="user.no_telepon"></span></p>
+        <p><b>Alamat:</b> <span x-text="user.alamat"></span></p>
+        <p><b>Created At:</b> <span x-text="user.created_at"></span></p>
+
+    </div>
+
+    <script>
+            function userDetail() {
+                return {
+                    user: {},
+
+                    async fetchUser() {
+                        const res = await fetch(`/api/users/@id`)
+                        const json = await res.json()
+
+                        this.user = json.data
+                    }
+                }
+            }
+    </script>
+}

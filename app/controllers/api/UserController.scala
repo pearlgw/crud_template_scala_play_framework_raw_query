@@ -112,4 +112,12 @@ class UserController @Inject()
         error("Gagal menghapus user", 500)
     }
   }
+
+  def viewIndex() = Action {
+    Ok(views.html.index())
+  }
+
+  def viewShow(id: String) = Action {
+    Ok(views.html.users.show(id))
+  }
 }
