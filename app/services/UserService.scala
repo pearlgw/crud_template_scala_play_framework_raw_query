@@ -1,15 +1,15 @@
 package services
 
-import javax.inject._
 import repository.UserRepository
-import requests.CreateUserRequest
-import requests.UpdateUserRequest
+import requests.{CreateUserRequest, UpdateUserRequest}
 import response.UserResponse
+
+import javax.inject.*
 
 @Singleton
 class UserService @Inject()(repo: UserRepository) {
-  def getAllUsers() = {
-    repo.findAll()
+  def getAllUsers(page: Int, limit: Int, search: Option[String]) = {
+    repo.findAll(page, limit, search)
   }
 
   def createUser(req: CreateUserRequest): Int = {

@@ -10,10 +10,37 @@ import scala.collection.mutable.ListBuffer
 
 @Singleton
 class UserRepository @Inject()(db: Database) {
-  def findAll(): List[UserResponse] = {
+  def findAll(page: Int, limit: Int, search: Option[String]): (List[UserResponse], Int) = {
     db.withConnection { conn =>
-      val stmt = conn.createStatement()
-      val rs = stmt.executeQuery("SELECT * FROM users")
+
+      val offset = (page - 1) * limit
+
+      val baseQuery = new StringBuilder("SELECT * FROM users WHERE 1=1")
+      val countQuery = new StringBuilder("SELECT COUNT(*) as total FROM users WHERE 1=1")
+
+      search.foreach { s =>
+        baseQuery.append(" AND nama LIKE ?")
+        countQuery.append(" AND nama LIKE ?")
+      }
+
+      baseQuery.append(" ORDER BY created_at DESC LIMIT ? OFFSET ?")
+
+      val stmt = conn.prepareStatement(baseQuery.toString())
+      val countStmt = conn.prepareStatement(countQuery.toString())
+
+      var index = 1
+
+      search.foreach { s =>
+        stmt.setString(index, s"%$s%")
+        countStmt.setString(index, s"%$s%")
+        index += 1
+      }
+
+      stmt.setInt(index, limit)
+      stmt.setInt(index + 1, offset)
+
+      val rs = stmt.executeQuery()
+      val countRs = countStmt.executeQuery()
 
       val result = ListBuffer[UserResponse]()
 
@@ -26,7 +53,10 @@ class UserRepository @Inject()(db: Database) {
           created_at = Option(rs.getString("created_at"))
         )
       }
-      result.toList
+
+      val total = if (countRs.next()) countRs.getInt("total") else 0
+
+      (result.toList, total)
     }
   }
 

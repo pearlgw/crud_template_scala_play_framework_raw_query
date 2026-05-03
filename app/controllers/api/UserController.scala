@@ -32,10 +32,24 @@ class UserController @Inject()
     }
   }
 
-  def index() = Action {
+  def index(): Action[AnyContent] = Action { implicit request =>
     try {
-      val users = service.getAllUsers()
-      success("Berhasil menampilkan semua data", Json.toJson(users))
+      val page = request.getQueryString("page").flatMap(_.toIntOption).getOrElse(1)
+      val limit = request.getQueryString("limit").flatMap(_.toIntOption).getOrElse(10)
+      val search = request.getQueryString("search")
+
+      val (users, total) = service.getAllUsers(page, limit, search)
+
+      success(
+        "Berhasil menampilkan data",
+        Json.toJson(users),
+        Some(Json.obj(
+          "page" -> page,
+          "limit" -> limit,
+          "total" -> total
+        ))
+      )
+
     } catch {
       case e: Exception =>
         e.printStackTrace()

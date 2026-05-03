@@ -5,12 +5,14 @@ import play.api.mvc.*
 
 abstract class BaseApiController(cc: ControllerComponents) extends AbstractController(cc) {
 
-  def success(message: String, data: JsValue) = {
-    Ok(Json.obj(
-      "status" -> 200,
-      "message" -> message,
-      "data" -> data
-    ))
+  def success(message: String, data: JsValue, meta: Option[JsValue] = None) = {
+    Ok(
+      Json.obj(
+        "status" -> 200,
+        "message" -> message,
+        "data" -> data
+      ) ++ meta.map(m => Json.obj("meta" -> m)).getOrElse(Json.obj())
+    )
   }
 
   def successCustom(statusCode: Int = 200, message: String) = {
